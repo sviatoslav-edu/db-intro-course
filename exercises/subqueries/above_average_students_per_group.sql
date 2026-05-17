@@ -11,39 +11,39 @@
 --          - назвою групи, потім за середнім балом студента (спадання), потім за іменем студента
 
 -- Рішення:
-WITH student_avg AS (
+WITH student_grades AS (
     SELECT
-        student_id,
-        AVG(grade) AS avg_student_grade
-    FROM enrolment
-    WHERE grade IS NOT NULL
-    GROUP BY student_id
+        s.student_id,
+        s.group_id,
+        AVG(e.grade) AS avg_student_grade
+    FROM student s
+    JOIN enrolment e ON s.student_id = e.student_id
+    GROUP BY s.student_id, s.group_id
 ),
-group_avg AS (
+group_grades AS (
     SELECT
         s.group_id,
         AVG(e.grade) AS avg_group_grade
-    FROM enrolment e
-    JOIN student s ON s.student_id = e.student_id
-    WHERE e.grade IS NOT NULL
+    FROM student s
+    JOIN enrolment e ON s.student_id = e.student_id
     GROUP BY s.group_id
 )
 SELECT
-    sa.student_id,
+    sg.student_id,
     CONCAT(p.first_name, ' ', p.last_name) AS full_name,
-    sg.name AS group_name,
-    sa.avg_student_grade::float AS avg_student_grade,
-    ga.avg_group_grade::float AS avg_group_grade
-FROM student_avg sa
-JOIN student s  ON s.student_id = sa.student_id
-JOIN person p  ON p.person_id = s.person_id
-JOIN student_group sg ON sg.group_id = s.group_id
-JOIN group_avg ga ON ga.group_id  = s.group_id
-WHERE sa.avg_student_grade > ga.avg_group_grade
---TODO:FIX
+    g.name AS group_name,
+    ROUND(sg.avg_student_grade::numeric, 2)::float AS avg_student_grade,
+    ROUND(gg.avg_group_grade::numeric, 2)::float AS avg_group_grade
+FROM student_grades sg
+JOIN group_grades gg ON sg.group_id = gg.group_id
+JOIN student_group g ON sg.group_id = g.group_id
+JOIN student s ON sg.student_id = s.student_id
+JOIN person p ON s.person_id = p.person_id
+WHERE ROUND(sg.avg_student_grade::numeric, 2) > ROUND(gg.avg_group_grade::numeric, 2)
 ORDER BY
     group_name,
-    avg_student_grade DESC,
-    full_name
+    sg.avg_student_grade DESC,
+    full_name,
+    sg.student_id;
  
 
