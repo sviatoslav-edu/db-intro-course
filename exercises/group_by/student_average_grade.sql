@@ -21,6 +21,7 @@ JOIN student s ON e.student_id = s.student_id
 JOIN person p ON s.person_id = p.person_id
 JOIN student_group sg ON s.group_id = sg.group_id
 GROUP BY s.student_id, p.first_name, p.last_name, sg.name, s.group_id
-ORDER BY group_name, 
+ORDER BY 
+    group_name, 
     full_name,
-    s.student_id;
+    s.student_id DESC;

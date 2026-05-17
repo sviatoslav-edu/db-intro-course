@@ -33,4 +33,5 @@ FROM course_count_of_student ccof
 WHERE ccof.course_number > gacc.avg_number
 ORDER BY 
     ccof.course_number DESC, 
-    CONCAT(p.first_name, ' ', p.last_name) ASC;
+    CONCAT(p.first_name, ' ', p.last_name) ASC, 
+    ccof.student_id ASC;
